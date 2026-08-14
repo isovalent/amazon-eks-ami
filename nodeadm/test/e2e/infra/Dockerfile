@@ -11,12 +11,9 @@ RUN mv _bin/nodeadm /nodeadm
 
 FROM public.ecr.aws/amazonlinux/amazonlinux:2023
 RUN dnf -y update && \
-    dnf -y install systemd containerd jq python3 awscli && \
+    dnf -y install systemd containerd jq python3.11 python3.11-pip awscli && \
     dnf clean all
-RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
-    python3 get-pip.py && \
-    rm get-pip.py
-RUN pip install --user 'moto[server]'
+RUN python3.11 -m pip install --user 'moto[server]==5.2.2'
 # I know how this looks, but it lets us use moto with our mocked IMDS and for now the simplicity is worth the hack
 RUN sed -i 's/= random_instance_id()/= "i-1234567890abcdef0"/g' $HOME/.local/lib/python*/site-packages/moto/ec2/models/instances.py
 COPY --from=imds-mock-build /imds-mock /usr/local/bin/imds-mock
